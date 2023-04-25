@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,7 +27,7 @@ func (s *Search) Routes() chi.Router {
 	return router
 }
 
-// GetAll is a GET handler that receives a GET request with a text file location in the request body,
+// GetAll is a handler that receives a GET request with a text file location as query parameter,
 // and a search word in its URL.
 // If the search word is shorter than 2 characters, it returns StatusBadRequest.
 // In case of StatusOK, the response contains a JSON as indicated in the task description (see task.pdf).
@@ -82,12 +83,20 @@ func (s *Search) GetAll(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Writing response in JSON
+	// Marshalling lineOfOccurrences
+	lineOfOccurrencesInBytes, err := json.Marshal(lineOfOccurrences)
+	if err != nil {
+		log.Printf("GetAll has failed: %v", err)
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Writing response
 	response := []byte(fmt.Sprintf(`{
 		"wordFound": %v,
 		"numOccurrences": %v,
 		"lineOccurrences": %v
-		}`, wordFound, numberOfOccurrences, lineOfOccurrences))
+		}`, wordFound, numberOfOccurrences, string(lineOfOccurrencesInBytes)))
 
 	writer.Header().Set("Content-Type", "text/html")
 

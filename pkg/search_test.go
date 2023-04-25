@@ -1,36 +1,153 @@
 package pkg
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestGetAll(t *testing.T) {
-	textLocation := "../test1.txt"
-	searchWord := "study"
+type Result struct {
+	WordFound       bool  `json:"wordFound"`
+	NumOccurrences  int   `json:"numOccurrences"`
+	LineOccurrences []int `json:"lineOccurrences"` // it can never be nil after json.Unmarshal()
+}
 
+func TestGetAll(t *testing.T) {
 	application := NewApplication()
 
-	// GET request
-	url := fmt.Sprintf("/api/v0.1/search/%v?location=%v", searchWord, textLocation)
+	// Case 1: no occurrence
+	{
+		const (
+			textLocation = "../test1.txt"
+			searchWord   = "falatka"
+		)
 
-	request, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		t.Error(err)
+		// GET request
+		url := fmt.Sprintf("/api/v0.1/search/%v?location=%v", searchWord, textLocation)
+
+		request, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// NewRecorder implements a ResponseWriter for testing
+		responseWriter := httptest.NewRecorder()
+
+		// GET response
+		application.router.ServeHTTP(responseWriter, request)
+
+		if status := responseWriter.Code; status != http.StatusOK {
+			t.Error(status)
+		} else {
+			var resultObject Result
+
+			err = json.Unmarshal(responseWriter.Body.Bytes(), &resultObject)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if resultObject.WordFound {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.WordFound, !resultObject.WordFound)
+			}
+
+			if resultObject.NumOccurrences != 0 {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.NumOccurrences, 0)
+			}
+
+			if len(resultObject.LineOccurrences) != 0 {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.LineOccurrences, 0)
+			}
+		}
 	}
 
-	// NewRecorder implements a ResponseWriter for testing
-	responseWriter := httptest.NewRecorder()
+	// Case 2: one occurrence
+	{
+		const (
+			textLocation = "../test1.txt"
+			searchWord   = "which"
+		)
 
-	// GET response
-	application.router.ServeHTTP(responseWriter, request)
+		// GET request
+		url := fmt.Sprintf("/api/v0.1/search/%v?location=%v", searchWord, textLocation)
 
-	if status := responseWriter.Code; status != http.StatusOK {
-		t.Error(status)
-	} else {
-		log.Print(responseWriter.Body.String())
+		request, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// NewRecorder implements a ResponseWriter for testing
+		responseWriter := httptest.NewRecorder()
+
+		// GET response
+		application.router.ServeHTTP(responseWriter, request)
+
+		if status := responseWriter.Code; status != http.StatusOK {
+			t.Error(status)
+		} else {
+			var resultObject Result
+
+			err = json.Unmarshal(responseWriter.Body.Bytes(), &resultObject)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !resultObject.WordFound {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.WordFound, !resultObject.WordFound)
+			}
+
+			if resultObject.NumOccurrences != 1 {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.NumOccurrences, 1)
+			}
+
+			if len(resultObject.LineOccurrences) != 1 || resultObject.LineOccurrences[0] != 1 {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.LineOccurrences, []int{1})
+			}
+		}
+	}
+
+	// Case 3: multiple occurrences
+	{
+		textLocation := "../test1.txt"
+		searchWord := "study"
+
+		// GET request
+		url := fmt.Sprintf("/api/v0.1/search/%v?location=%v", searchWord, textLocation)
+
+		request, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// NewRecorder implements a ResponseWriter for testing
+		responseWriter := httptest.NewRecorder()
+
+		// GET response
+		application.router.ServeHTTP(responseWriter, request)
+
+		if status := responseWriter.Code; status != http.StatusOK {
+			t.Error(status)
+		} else {
+			var resultObject Result
+
+			err = json.Unmarshal(responseWriter.Body.Bytes(), &resultObject)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !resultObject.WordFound {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.WordFound, !resultObject.WordFound)
+			}
+
+			if resultObject.NumOccurrences != 3 {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.NumOccurrences, 3)
+			}
+
+			if len(resultObject.LineOccurrences) != 3 || resultObject.LineOccurrences[0] != 18 ||
+				resultObject.LineOccurrences[1] != 22 || resultObject.LineOccurrences[2] != 23 {
+				t.Errorf("TestGetAll has failed. Got %v instead of %v", resultObject.LineOccurrences, []int{18, 22, 23})
+			}
+		}
 	}
 }
