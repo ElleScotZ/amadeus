@@ -12,28 +12,33 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Routes
+// Routes collects all handlers and returns a router (mux).
+// In this specific case, there is only 1 handler.
 func Routes() chi.Router {
 	router := chi.NewRouter()
 
-	router.Route("/{searchWord}", func(r chi.Router) {
+	router.Route("/search/{searchWord}", func(r chi.Router) {
 		r.Get("/", GetAll)
 	})
 
 	return router
 }
 
-// GetAll
+// GetAll is a GET handler that receives a GET request with a text file location in the request body,
+// and a search word in its URL.
+// If the search word is shorter than 2 characters, it returns StatusBadRequest.
+// In case of StatusOK, the response contains a JSON as indicated in the task description (see task.pdf).
 func GetAll(writer http.ResponseWriter, request *http.Request) {
 	var (
 		wordFound           bool
 		numberOfOccurrences int
 		lineOfOccurrences   []int
-		lineCounter         = 1
+		lineCounter         = 1 // it is more intuitive to start counting the lines in the text file from 1
 	)
 
 	searchWord := chi.URLParam(request, "searchWord")
 
+	// Status 400 in case of too short searchWord
 	if len(searchWord) < 2 {
 		http.Error(writer, "GetAll request for minimum 2 letters, please!", http.StatusBadRequest)
 		return
@@ -49,7 +54,7 @@ func GetAll(writer http.ResponseWriter, request *http.Request) {
 
 	fileLocation := string(requestBody)
 
-	// Scanning through text file
+	// Opening the text file
 	file, err := os.Open(fileLocation)
 	if err != nil {
 		log.Fatal(err)
@@ -59,6 +64,7 @@ func GetAll(writer http.ResponseWriter, request *http.Request) {
 
 	scanner := bufio.NewScanner(file)
 
+	// Scanning through the text file
 	for scanner.Scan() {
 		line := scanner.Text()
 
@@ -75,7 +81,13 @@ func GetAll(writer http.ResponseWriter, request *http.Request) {
 		lineCounter++
 	}
 
-	// Writing response
+	if err := scanner.Err(); err != nil {
+		log.Printf("GetAll has failed: %v", err)
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Writing response in JSON
 	response := []byte(fmt.Sprintf(`{
 		"wordFound": %v,
 		"numOccurrences": %v,

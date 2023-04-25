@@ -16,7 +16,7 @@ func TestGetAll(t *testing.T) {
 	router := Routes()
 
 	// GET request
-	url := fmt.Sprintf("/%v", searchWord)
+	url := fmt.Sprintf("/search/%v", searchWord)
 
 	bodyReader := bytes.NewReader(textLocation)
 
