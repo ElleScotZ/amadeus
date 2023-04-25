@@ -1,4 +1,4 @@
-package document
+package pkg
 
 import (
 	"bytes"
@@ -10,13 +10,13 @@ import (
 )
 
 func TestGetAll(t *testing.T) {
-	textLocation := []byte("../../test1.txt")
+	textLocation := []byte("../test1.txt")
 	searchWord := "study"
 
-	router := Routes()
+	application := NewApplication()
 
 	// GET request
-	url := fmt.Sprintf("/search/%v", searchWord)
+	url := fmt.Sprintf("/api/v0.1/search/%v", searchWord)
 
 	bodyReader := bytes.NewReader(textLocation)
 
@@ -29,7 +29,7 @@ func TestGetAll(t *testing.T) {
 	responseWriter := httptest.NewRecorder()
 
 	// GET response
-	router.ServeHTTP(responseWriter, request)
+	application.router.ServeHTTP(responseWriter, request)
 
 	if status := responseWriter.Code; status != http.StatusOK {
 		t.Error(status)

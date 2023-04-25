@@ -1,4 +1,4 @@
-package document
+package pkg
 
 import (
 	"bufio"
@@ -12,13 +12,16 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type Search struct {
+}
+
 // Routes collects all handlers and returns a router (mux).
 // In this specific case, there is only 1 handler.
-func Routes() chi.Router {
+func (s *Search) Routes() chi.Router {
 	router := chi.NewRouter()
 
-	router.Route("/search/{searchWord}", func(r chi.Router) {
-		r.Get("/", GetAll)
+	router.Route("/{searchWord}", func(r chi.Router) {
+		r.Get("/", s.GetAll)
 	})
 
 	return router
@@ -28,7 +31,7 @@ func Routes() chi.Router {
 // and a search word in its URL.
 // If the search word is shorter than 2 characters, it returns StatusBadRequest.
 // In case of StatusOK, the response contains a JSON as indicated in the task description (see task.pdf).
-func GetAll(writer http.ResponseWriter, request *http.Request) {
+func (s *Search) GetAll(writer http.ResponseWriter, request *http.Request) {
 	var (
 		wordFound           bool
 		numberOfOccurrences int
