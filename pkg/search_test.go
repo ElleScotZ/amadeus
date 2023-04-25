@@ -150,4 +150,52 @@ func TestGetAll(t *testing.T) {
 			}
 		}
 	}
+
+	// Case 4: too short searchWord
+	{
+		textLocation := "../test1.txt"
+		searchWord := "a"
+
+		// GET request
+		url := fmt.Sprintf("/api/v0.1/search/%v?location=%v", searchWord, textLocation)
+
+		request, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// NewRecorder implements a ResponseWriter for testing
+		responseWriter := httptest.NewRecorder()
+
+		// GET response
+		application.router.ServeHTTP(responseWriter, request)
+
+		if status := responseWriter.Code; status != http.StatusBadRequest {
+			t.Error(status)
+		}
+	}
+
+	// Case 5: wrong location
+	{
+		textLocation := "test1.txt"
+		searchWord := "study"
+
+		// GET request
+		url := fmt.Sprintf("/api/v0.1/search/%v?location=%v", searchWord, textLocation)
+
+		request, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// NewRecorder implements a ResponseWriter for testing
+		responseWriter := httptest.NewRecorder()
+
+		// GET response
+		application.router.ServeHTTP(responseWriter, request)
+
+		if status := responseWriter.Code; status != http.StatusInternalServerError {
+			t.Error(status)
+		}
+	}
 }

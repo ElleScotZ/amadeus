@@ -53,7 +53,9 @@ func (s *Search) GetAll(writer http.ResponseWriter, request *http.Request) {
 	// Opening the text file
 	file, err := os.Open(fileLocation)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("GetAll has failed: %v", err)
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	defer file.Close()
