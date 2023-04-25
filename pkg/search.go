@@ -49,16 +49,6 @@ func (s *Search) GetAll(writer http.ResponseWriter, request *http.Request) {
 	// Extract text file location information from query
 	fileLocation := request.URL.Query().Get("location")
 
-	// // Reading request body that contains the location of the text file
-	// requestBody, err := io.ReadAll(request.Body)
-	// if err != nil {
-	// 	log.Printf("GetAll has failed: %v", err)
-	// 	http.Error(writer, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// fileLocation := string(requestBody)
-
 	// Opening the text file
 	file, err := os.Open(fileLocation)
 	if err != nil {
@@ -96,10 +86,10 @@ func (s *Search) GetAll(writer http.ResponseWriter, request *http.Request) {
 	response := []byte(fmt.Sprintf(`{
 		"wordFound": %v,
 		"numOccurrences": %v,
-		"lineOccurrences": %v,
+		"lineOccurrences": %v
 		}`, wordFound, numberOfOccurrences, lineOfOccurrences))
 
-	writer.Header().Set("Content-Type", "application/json")
+	writer.Header().Set("Content-Type", "text/html")
 
 	_, err = writer.Write(response)
 	if err != nil {

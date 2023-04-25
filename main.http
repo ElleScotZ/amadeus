@@ -1,6 +1,2 @@
-GET http://localhost:9000/api/v0.1/search/study HTTP/1.1
+GET http://localhost:9000/api/v0.1/search/study?location=test1.txt HTTP/1.1
 Content-Type: application/json
-Authorization: token xxx
-<request>
-    "test1.txt"
-</request>
