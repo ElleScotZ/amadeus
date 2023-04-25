@@ -3,7 +3,6 @@ package pkg
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -47,15 +46,18 @@ func (s *Search) GetAll(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Reading request body that contains the location of the text file
-	requestBody, err := io.ReadAll(request.Body)
-	if err != nil {
-		log.Printf("GetAll has failed: %v", err)
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Extract text file location information from query
+	fileLocation := request.URL.Query().Get("location")
 
-	fileLocation := string(requestBody)
+	// // Reading request body that contains the location of the text file
+	// requestBody, err := io.ReadAll(request.Body)
+	// if err != nil {
+	// 	log.Printf("GetAll has failed: %v", err)
+	// 	http.Error(writer, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// fileLocation := string(requestBody)
 
 	// Opening the text file
 	file, err := os.Open(fileLocation)

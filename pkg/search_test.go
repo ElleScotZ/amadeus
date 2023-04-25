@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,17 +9,18 @@ import (
 )
 
 func TestGetAll(t *testing.T) {
-	textLocation := []byte("../test1.txt")
+	// textLocation := []byte("../test1.txt")
+	textLocation := "../test1.txt"
 	searchWord := "study"
 
 	application := NewApplication()
 
 	// GET request
-	url := fmt.Sprintf("/api/v0.1/search/%v", searchWord)
+	url := fmt.Sprintf("/api/v0.1/search/%v?location=%v", searchWord, textLocation)
 
-	bodyReader := bytes.NewReader(textLocation)
+	// bodyReader := bytes.NewReader(textLocation)
 
-	request, err := http.NewRequest("GET", url, bodyReader)
+	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Error(err)
 	}
