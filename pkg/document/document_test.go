@@ -3,14 +3,15 @@ package document
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestGetAll(t *testing.T) {
-	textLocation := []byte("test1.txt")
-	searchWord := "bla"
+	textLocation := []byte("../../test1.txt")
+	searchWord := "study"
 
 	router := Routes()
 
@@ -32,5 +33,7 @@ func TestGetAll(t *testing.T) {
 
 	if status := responseWriter.Code; status != http.StatusOK {
 		t.Error(status)
+	} else {
+		log.Print(responseWriter.Body.String())
 	}
 }

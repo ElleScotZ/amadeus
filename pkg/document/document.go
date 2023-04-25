@@ -29,7 +29,7 @@ func GetAll(writer http.ResponseWriter, request *http.Request) {
 		wordFound           bool
 		numberOfOccurrences int
 		lineOfOccurrences   []int
-		lineCounter         int
+		lineCounter         = 1
 	)
 
 	searchWord := chi.URLParam(request, "searchWord")
